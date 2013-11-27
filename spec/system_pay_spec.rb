@@ -55,7 +55,17 @@ describe SystemPay do
       lambda do
         system_pay = SystemPay::Vads.new(:amount => 100, :trans_id => 2)
       end.should_not raise_error
-    end        
+    end 
+
+    it 'should pad trans_id' do
+      system_pay = SystemPay::Vads.new(:amount => 100, :trans_id => 2)
+      system_pay.vads_trans_id.should == "000002"
+    end
+
+    it 'should not pad trans_id with 6 digits' do
+      system_pay = SystemPay::Vads.new(:amount => 100, :trans_id => 999999)
+      system_pay.vads_trans_id.should == "999999"
+    end
       
   end
   

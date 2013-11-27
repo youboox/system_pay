@@ -130,7 +130,7 @@ module SystemPay
 
       @vads_currency ||= '978' # Euros
       @vads_trans_date ||= Time.now.utc.strftime("%Y%m%d%H%M%S")
-      @vads_trans_id = (@vads_trans_id % 900000).to_s.rjust(6, '0')
+      @vads_trans_id = @vads_trans_id.to_s.rjust(6, '0')
     end
 
     # Public: Compute the signature of the request based on the parameters
