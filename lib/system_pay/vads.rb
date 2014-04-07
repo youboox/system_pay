@@ -42,6 +42,7 @@ module SystemPay
       '27' => 'vads_url_cancel',
       '28' => 'vads_url_return',
       '29' => 'vads_url_error',
+      '30' => 'vads_identifier',
       '31' => 'vads_contrib',
       '32' => 'vads_theme_config',
       '34' => 'vads_redirect_success_timeout',
@@ -73,9 +74,6 @@ module SystemPay
 
     @@vads_contrib = 'Ruby'
     cattr_accessor :vads_contrib
-
-    @@vads_page_action = 'PAYMENT'
-    cattr_accessor :vads_page_action
 
     @@vads_payment_config = 'SINGLE'
     cattr_accessor :vads_payment_config
@@ -112,7 +110,7 @@ module SystemPay
       :vads_ship_to_street, :vads_ship_to_street2, :vads_ship_to_zip, :vads_theme_config, :vads_trans_date,
       :vads_trans_id, :vads_url_cancel, :vads_url_error, :vads_url_referral, :vads_url_refused, :vads_url_success,
       :vads_url_return, :vads_cust_first_name, :vads_cust_last_name, :vads_sub_desc, :vads_sub_init_amount,
-      :vads_sub_init_amount_number, :vads_sub_amount, :vads_sub_currency, :vads_sub_effect_date
+      :vads_sub_init_amount_number, :vads_sub_amount, :vads_sub_currency, :vads_sub_effect_date, :vads_identifier, :vads_page_action
 
 
     # Public: Creation of new instance.
@@ -136,12 +134,14 @@ module SystemPay
         end
       end if args
 
-      raise ArgumentError.new("You must specify a non blank :amount parameter") unless (@vads_amount.present?)
-      raise ArgumentError.new("You must specify a non blank :trans_id parameter") unless @vads_trans_id.present?
+      raise ArgumentError.new("You must specify a non blank :amount parameter") unless (@vads_amount.present? || @vads_page_action=="REGISTER_UPDATE")
+      raise ArgumentError.new("You must specify a non blank :trans_id parameter") unless (@vads_trans_id.present? || @vads_page_action=="REGISTER_UPDATE")
+      raise ArgumentError.new("You must specify a non blank :vads_identifier parameter") unless (@vads_identifier.present? || @vads_page_action!="REGISTER_UPDATE")
 
       @vads_currency ||= '978' # Euros
       @vads_trans_date ||= Time.now.utc.strftime("%Y%m%d%H%M%S")
       @vads_trans_id = @vads_trans_id.to_s.rjust(6, '0')
+      @vads_page_action ||= 'PAYMENT'
     end
 
     # Public: Compute the signature of the request based on the parameters

@@ -39,32 +39,61 @@ describe SystemPay do
   end    
   
   describe '.new' do
-    it 'should raise an error if the amount parameter is not set' do
-      lambda do
-        system_pay = SystemPay::Vads.new(:trans_id => 1)
-      end.should raise_error(ArgumentError)
-    end
+
     
-    it 'should raise an error if the trans_id parameter is not set' do
-      lambda do
-        system_pay = SystemPay::Vads.new(:amount => 100)
-      end.should raise_error(ArgumentError)
-    end 
+    context "payment transaction" do
+      it 'should raise an error if the amount parameter is not set' do
+        lambda do
+          system_pay = SystemPay::Vads.new(:trans_id => 1)
+        end.should raise_error(ArgumentError)
+      end
     
-    it 'should pass with trans_id and amount parameters passed' do
-      lambda do
+      it 'should raise an error if the trans_id parameter is not set' do
+        lambda do
+          system_pay = SystemPay::Vads.new(:amount => 100)
+        end.should raise_error(ArgumentError)
+      end 
+      
+      it 'should pass with trans_id and amount parameters passed' do
+        lambda do
+          system_pay = SystemPay::Vads.new(:amount => 100, :trans_id => 2)
+        end.should_not raise_error
+      end 
+
+      it 'should pad trans_id' do
         system_pay = SystemPay::Vads.new(:amount => 100, :trans_id => 2)
-      end.should_not raise_error
-    end 
+        system_pay.vads_trans_id.should == "000002"
+      end
 
-    it 'should pad trans_id' do
-      system_pay = SystemPay::Vads.new(:amount => 100, :trans_id => 2)
-      system_pay.vads_trans_id.should == "000002"
+      it 'should not pad trans_id with 6 digits' do
+        system_pay = SystemPay::Vads.new(:amount => 100, :trans_id => 999999)
+        system_pay.vads_trans_id.should == "999999"
+      end
     end
 
-    it 'should not pad trans_id with 6 digits' do
-      system_pay = SystemPay::Vads.new(:amount => 100, :trans_id => 999999)
-      system_pay.vads_trans_id.should == "999999"
+    context "non payment transaction" do
+      it "allows empty amount" do
+        lambda do
+          SystemPay::Vads.new(:vads_identifier => "20140323iRctSr", :vads_page_action => "REGISTER_UPDATE")
+        end.should_not raise_error
+      end
+
+      it "allows empty trans_id" do
+        lambda do
+          SystemPay::Vads.new(:vads_identifier => "20140323iRctSr", :vads_page_action => "REGISTER_UPDATE")
+        end.should_not raise_error
+      end
+
+      it 'raises an error if the vads_identifier parameter is not set' do
+        lambda do
+          SystemPay::Vads.new(:vads_page_action => "REGISTER_UPDATE")
+        end.should raise_error(ArgumentError)
+      end
+
+      it "allows setting vads_page_action" do
+        system_pay = SystemPay::Vads.new(:vads_identifier => "20140323iRctSr", :vads_page_action => "REGISTER_UPDATE")
+        system_pay.vads_page_action.should == "REGISTER_UPDATE"
+      end
     end
       
   end
