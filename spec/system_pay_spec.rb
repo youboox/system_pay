@@ -69,6 +69,22 @@ describe SystemPay do
         system_pay = SystemPay::Vads.new(:amount => 100, :trans_id => 999999)
         system_pay.vads_trans_id.should == "999999"
       end
+
+      it "should include currency" do
+        SystemPay::Vads.new(:amount => 100, :trans_id => 999999).vads_currency.should == "978"
+      end
+
+      it "should include vads_page_action" do
+        SystemPay::Vads.new(:amount => 100, :trans_id => 999999).vads_page_action.should == "PAYMENT"
+      end
+
+      it "should include vads_payment_config" do
+        SystemPay::Vads.new(:amount => 100, :trans_id => 999999).vads_payment_config.should == "SINGLE"
+      end
+
+      it "should include vads_trans_date" do
+        SystemPay::Vads.new(:amount => 100, :trans_id => 999999).vads_trans_date.should_not be_nil
+      end
     end
 
     context "non payment transaction" do
@@ -93,6 +109,18 @@ describe SystemPay do
       it "allows setting vads_page_action" do
         system_pay = SystemPay::Vads.new(:vads_identifier => "20140323iRctSr", :vads_page_action => "REGISTER_UPDATE")
         system_pay.vads_page_action.should == "REGISTER_UPDATE"
+      end
+
+      it "should not include currency" do
+        SystemPay::Vads.new(:vads_identifier => "20140323iRctSr", :vads_page_action => "REGISTER_UPDATE").vads_currency.should be_nil
+      end
+
+      it "should not include vads_payment_config" do
+        SystemPay::Vads.new(:vads_identifier => "20140323iRctSr", :vads_page_action => "REGISTER_UPDATE").vads_payment_config.should be_nil
+      end
+
+      it "should not include vads_trans_date" do
+        SystemPay::Vads.new(:vads_identifier => "20140323iRctSr", :vads_page_action => "REGISTER_UPDATE").vads_trans_date.should_not be_nil
       end
     end
       
