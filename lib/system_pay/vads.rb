@@ -1,4 +1,6 @@
 # encoding: UTF-8
+require 'digest'
+
 module SystemPay
   class Vads
     # pre-defined messages (from 2.2 Guide)
@@ -62,6 +64,18 @@ module SystemPay
       '105' => 'vads_cust_last_name'
     }
 
+    class << self
+      def cattr_accessor(name)
+        define_singleton_method "#{name}=" do |value|
+          class_variable_set "@@#{name}", value
+        end
+
+        define_singleton_method "#{name}" do
+          class_variable_get "@@#{name}"
+        end
+      end
+    end
+
     # fixed params per shop are class variables
     @@target_url = "https://paiement.systempay.fr/vads-payment/"
     cattr_accessor :target_url
@@ -96,6 +110,7 @@ module SystemPay
     @@vads_shop_url = ''
     cattr_accessor :vads_shop_url
 
+
     # transaction parameters are instance variables
     attr_accessor :vads_amount, :vads_available_languages, :vads_capture_delay, :vads_contracts, :vads_currency,
       :vads_cust_address, :vads_cust_cell_phone, :vads_cust_city, :vads_cust_country, :vads_cust_email, :vads_cust_id,
@@ -126,18 +141,18 @@ module SystemPay
     def initialize(args=nil)
       args.each do |k,v|
         if k.to_s.match(/^vads_/)
-          instance_variable_set("@#{k}", v) if v.present? && respond_to?(k)
+          instance_variable_set("@#{k}", v) if !v.nil? && respond_to?(k)
         else
-          instance_variable_set("@vads_#{k}", v) if v.present? && respond_to?("vads_#{k}")
+          instance_variable_set("@vads_#{k}", v) if !v.nil? && respond_to?("vads_#{k}")
         end
       end if args
 
       #By default it's a payment
       @vads_page_action ||= 'PAYMENT'
 
-      raise ArgumentError.new("You must specify a non blank :amount parameter") unless (@vads_amount.present? || @vads_page_action=="REGISTER_UPDATE")
-      raise ArgumentError.new("You must specify a non blank :trans_id parameter") unless (@vads_trans_id.present? || @vads_page_action=="REGISTER_UPDATE")
-      raise ArgumentError.new("You must specify a non blank :vads_identifier parameter") unless (@vads_identifier.present? || @vads_page_action!="REGISTER_UPDATE")
+      raise ArgumentError.new("You must specify a non blank :amount parameter") unless (!@vads_amount.nil? || @vads_page_action=="REGISTER_UPDATE")
+      raise ArgumentError.new("You must specify a non blank :trans_id parameter") unless (!@vads_trans_id.nil? || @vads_page_action=="REGISTER_UPDATE")
+      raise ArgumentError.new("You must specify a non blank :vads_identifier parameter") unless (!@vads_identifier.nil? || @vads_page_action!="REGISTER_UPDATE")
 
       #mandatory parameters
       @vads_trans_date ||= Time.now.utc.strftime("%Y%m%d%H%M%S")
@@ -179,7 +194,7 @@ module SystemPay
     #                  :user_msg => "msg for user",
     #                  :tech_msg => "msg for back-office" }
     def self.diagnose(params)
-      if params[:vads_result].blank?
+      if params[:vads_result].nil?
         { :status => :bad_params,
           :user_msg => 'Vous allez être redirigé vers la page d’accueil',
           :tech_msg => 'vads_result est vide. Suspicion de tentative de fraude.' }
